@@ -81,6 +81,32 @@ sub new {
 		deutschlandTicketVorhanden        => \0
 	};
 
+	if ( @{ $conf{discount} // [] } ) {
+		$req->{reisende}[0]{ermaessigungen} = [];
+	}
+	for my $discount ( @{ $conf{discounts} // [] } ) {
+		my ( $type, $class );
+		for my $num (qw(25 50 100)) {
+			if ( $discount eq "bc${num}" ) {
+				$type  = "BAHNCARD${num}";
+				$class = 'KLASSE_2';
+			}
+			elsif ( $discount eq "bc${num}-first" ) {
+				$type  = "BAHNCARD${num}";
+				$class = 'KLASSE_1';
+			}
+		}
+		if ($type) {
+			push(
+				@{ $req->{reisende}[0]{ermaessigungen} },
+				{
+					art    => $type,
+					klasse => $class,
+				}
+			);
+		}
+	}
+
 	$self->{strptime_obj} //= DateTime::Format::Strptime->new(
 		pattern   => '%Y-%m-%dT%H:%M:%S',
 		time_zone => 'Europe/Berlin',

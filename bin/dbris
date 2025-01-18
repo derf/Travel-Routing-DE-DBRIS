@@ -16,6 +16,7 @@ use Travel::Routing::DE::DBRIS;
 
 my ( $date, $time, $from, $to );
 my $mots;
+my $discounts;
 my $developer_mode;
 my ( $json_output, $raw_json_output );
 my $use_cache = 1;
@@ -33,6 +34,7 @@ my $output_reset = -t STDOUT ? "\033[0m" : q{};
 
 GetOptions(
 	'd|date=s'             => \$date,
+	'D|discounts=s'        => \$discounts,
 	'h|help'               => sub { show_help(0) },
 	'm|modes-of-transit=s' => \$mots,
 	't|time=s'             => \$time,
@@ -132,6 +134,10 @@ if ( $date or $time ) {
 
 if ($mots) {
 	$opt{modes_of_transit} = [ split( qr{, *}, $mots ) ];
+}
+
+if ($discounts) {
+	$opt{discounts} = [ split( qr{, *}, $discounts ) ];
 }
 
 sub show_help {

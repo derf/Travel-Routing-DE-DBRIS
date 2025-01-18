@@ -219,13 +219,15 @@ for my $connection ( $ris->connections ) {
 
 	say q{};
 	printf(
-		"%s  (%02d:%02d)  %s  %s%s\n\n",
-		$connection->dep
-		? $connection->dep->strftime('%d.%m. %H:%M')
+		"%s  (%02d:%02d)  %s  %s%s%s\n\n",
+		$connection->dep ? $connection->dep->strftime('%d.%m. %H:%M')
 		: q{??.??. ??:??},
 		$connection->duration->in_units( 'hours', 'minutes' ),
 		$connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
 		format_occupancy($connection),
+		defined $connection->price
+		? sprintf( '  %s %s', $connection->price, $connection->price_unit )
+		: q{},
 		$header,
 	);
 	for my $segment ( $connection->segments ) {

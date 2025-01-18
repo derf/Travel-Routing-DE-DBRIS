@@ -3,6 +3,7 @@ package Travel::Routing::DE::DBRIS::Connection;
 use strict;
 use warnings;
 use 5.020;
+use utf8;
 
 use parent 'Class::Accessor';
 
@@ -16,7 +17,9 @@ Travel::Routing::DE::DBRIS::Connection->mk_ro_accessors(
 	  duration sched_duration rt_duration
 	  sched_dep rt_dep dep
 	  sched_arr rt_arr arr
-	  occupancy occupancy_first occupancy_second)
+	  occupancy occupancy_first occupancy_second
+	  price price_unit
+	)
 );
 
 sub new {
@@ -29,8 +32,14 @@ sub new {
 	my $ref = {
 		changes      => $json->{umstiegsAnzahl},
 		id           => $json->{tripId},
+		price        => $json->{angebotsPreis}{betrag},
+		price_unit   => $json->{angebotsPreis}{waehrung},
 		strptime_obj => $strptime,
 	};
+
+	if ( $ref->{price_unit} and $ref->{price_unit} eq 'EUR' ) {
+		$ref->{price_unit} = '€';
+	}
 
 	if ( my $d = $json->{verbindungsDauerInSeconds} ) {
 		$ref->{sched_duration} = DateTime::Duration->new(

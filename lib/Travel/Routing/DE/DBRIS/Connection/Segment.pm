@@ -7,6 +7,7 @@ use 5.020;
 use parent 'Class::Accessor';
 
 use DateTime::Duration;
+use Travel::Status::DE::DBRIS::Location;
 
 our $VERSION = '0.01';
 
@@ -18,6 +19,8 @@ Travel::Routing::DE::DBRIS::Connection::Segment->mk_ro_accessors(
 	  sched_arr rt_arr arr
 	  sched_duration rt_duration duration duration_percent
 	  journey_id
+	  occupancy occupancy_first occupancy_second
+	  is_transfer distance_m
 	)
 );
 
@@ -71,9 +74,58 @@ sub new {
 	}
 	$ref->{duration} = $ref->{rt_duration} // $ref->{sched_duration};
 
+	for my $occupancy ( @{ $json->{auslastungsmeldungen} // [] } ) {
+		if ( $occupancy->{klasse} eq 'KLASSE_1' ) {
+			$ref->{occupancy_first} = $occupancy->{stufe};
+		}
+		if ( $occupancy->{klasse} eq 'KLASSE_2' ) {
+			$ref->{occupancy_second} = $occupancy->{stufe};
+		}
+	}
+
+	if ( $ref->{occupancy_first} and $ref->{occupancy_second} ) {
+		$ref->{occupancy}
+		  = ( $ref->{occupancy_first} + $ref->{occupancy_second} ) / 2;
+	}
+	elsif ( $ref->{occupancy_first} ) {
+		$ref->{occupancy} = $ref->{occupancy_first};
+	}
+	elsif ( $ref->{occupancy_second} ) {
+		$ref->{occupancy} = $ref->{occupancy_second};
+	}
+
+	for my $stop ( @{ $json->{halte} // [] } ) {
+		push(
+			@{ $ref->{route} },
+			Travel::Status::DE::DBRIS::Location->new(
+				json         => $stop,
+				strptime_obj => $strptime
+			)
+		);
+	}
+
+	if ( $json->{verkehrsmittel}{typ} eq 'TRANSFER' ) {
+		$ref->{is_transfer} = 1;
+		$ref->{transfer_notes}
+		  = [ map { $_->{value} } @{ $json->{transferNotes} // [] } ];
+		$ref->{distance_m} = $json->{distanz};
+	}
+
 	bless( $ref, $obj );
 
 	return $ref;
+}
+
+sub route {
+	my ($self) = @_;
+
+	return @{ $self->{route} // [] }[ 1 .. $#{ $self->{route} } - 1 ];
+}
+
+sub transfer_notes {
+	my ($self) = @_;
+
+	return @{ $self->{transfer_notes} // [] };
 }
 
 1;

@@ -32,14 +32,15 @@ my $output_bold  = -t STDOUT ? "\033[1m" : q{};
 my $output_reset = -t STDOUT ? "\033[0m" : q{};
 
 GetOptions(
-	'd|date=s'  => \$date,
-	'h|help'    => sub { show_help(0) },
-	't|time=s'  => \$time,
-	'V|version' => \&show_version,
-	'cache!'    => \$use_cache,
-	'devmode'   => \$developer_mode,
-	'json'      => \$json_output,
-	'raw-json'  => \$raw_json_output,
+	'd|date=s'             => \$date,
+	'h|help'               => sub { show_help(0) },
+	'm|modes-of-transit=s' => \$mots,
+	't|time=s'             => \$time,
+	'V|version'            => \&show_version,
+	'cache!'               => \$use_cache,
+	'devmode'              => \$developer_mode,
+	'json'                 => \$json_output,
+	'raw-json'             => \$raw_json_output,
 
 ) or show_help(1);
 
@@ -129,6 +130,10 @@ if ( $date or $time ) {
 	$opt{datetime} = $dt;
 }
 
+if ($mots) {
+	$opt{modes_of_transit} = [ split( qr{, *}, $mots ) ];
+}
+
 sub show_help {
 	my ($code) = @_;
 
@@ -201,9 +206,18 @@ for my $connection ( $ris->connections ) {
 
 	my $header = q{};
 	for my $segment ( $connection->segments ) {
-		$header .= sprintf( '  %s', $segment->train_short, );
+		if ( $segment->train_short ) {
+			$header .= sprintf( '  %s', $segment->train_short );
+		}
+		elsif ( $segment->is_transfer ) {
+			$header .= sprintf( '  %.1fkm', $segment->distance_m / 1e3 );
+		}
+		else {
+			$header .= q{  ??};
+		}
 	}
 
+	say q{};
 	printf(
 		"%s  (%02d:%02d)  %s  %s%s\n\n",
 		$connection->dep
@@ -215,10 +229,28 @@ for my $connection ( $ris->connections ) {
 		$header,
 	);
 	for my $segment ( $connection->segments ) {
-		printf( "%s → %s\n", $segment->train_mid, $segment->direction );
+		if ( $segment->is_transfer ) {
+			for my $note ( $segment->transfer_notes ) {
+				say $note;
+			}
+		}
+		elsif ( $segment->direction ) {
+			printf( "${output_bold}%s${output_reset} → %s  %s\n",
+				$segment->train_mid, $segment->direction,
+				format_occupancy($segment) );
+		}
+		else {
+			printf( "${output_bold}%s${output_reset}\n", $segment->train_long );
+		}
 		printf( "%s  ab  %s\n",
 			$segment->dep->strftime('%H:%M'),
 			$segment->dep_name );
+
+		for my $stop ( $segment->route ) {
+			printf( "%s  %s  %s\n",
+				$stop->arr ? $stop->arr->strftime('%H:%M') : q{     },
+				format_occupancy($stop), $stop->name, );
+		}
 		printf( "%s  an  %s\n",
 			$segment->arr->strftime('%H:%M'),
 			$segment->arr_name );

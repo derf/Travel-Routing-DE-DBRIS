@@ -265,21 +265,28 @@ for my $connection ( $ris->connections ) {
 			printf( "${output_bold}%s${output_reset}\n", $segment->train_long );
 		}
 
-		printf( "%s  ab  %s\n",
+		printf( "%s  ab  %s%s\n",
 			$segment->dep->strftime('%H:%M'),
-			$segment->dep_name );
+			$segment->dep_name,
+			$segment->dep_platform ? q{  } . $segment->dep_platform : q{},
+		);
 
 		if ($show_full_route) {
 			for my $stop ( $segment->route ) {
-				printf( "%s  %s  %s\n",
+				printf( "%s  %s  %s%s\n",
 					$stop->arr ? $stop->arr->strftime('%H:%M') : q{     },
-					format_occupancy($stop), $stop->name, );
+					format_occupancy($stop),
+					$stop->name,
+					$stop->platform ? q{  } . $stop->platform : q{},
+				);
 			}
 		}
 
-		printf( "%s  an  %s\n",
+		printf( "%s  an  %s%s\n",
 			$segment->arr->strftime('%H:%M'),
-			$segment->arr_name );
+			$segment->arr_name,
+			$segment->arr_platform ? q{  } . $segment->arr_platform : q{},
+		);
 		say q{};
 	}
 	say q{---------------------------------------};

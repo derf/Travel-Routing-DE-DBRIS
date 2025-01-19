@@ -87,7 +87,7 @@ sub new {
 		deutschlandTicketVorhanden        => \0
 	};
 
-	if ( @{ $conf{discount} // [] } ) {
+	if ( @{ $conf{discounts} // [] } ) {
 		$req->{reisende}[0]{ermaessigungen} = [];
 	}
 	for my $discount ( @{ $conf{discounts} // [] } ) {

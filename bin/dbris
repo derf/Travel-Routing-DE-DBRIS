@@ -257,7 +257,7 @@ for my $connection ( $ris->connections ) {
 		$connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
 		format_occupancy($connection),
 		defined $connection->price
-		? sprintf( '  %s %s', $connection->price, $connection->price_unit )
+		? sprintf( '  %.2f %s', $connection->price, $connection->price_unit )
 		: q{},
 		$header,
 	);

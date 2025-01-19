@@ -340,7 +340,7 @@ dbris - Interface to bahn.de public transit routing service
 
 =head1 SYNOPSIS
 
-B<dbris> [B<-d> I<DD.MM.YYYY>] [B<-t> I<HH:MM>] I<from-stop> I<to-stop>
+B<dbris> [B<-d> I<DD.MM.YYYY>] [B<-t> I<HH:MM>] [...] I<from-stop> I<to-stop>
 
 =head1 VERSION
 
@@ -355,11 +355,33 @@ bahn.de. It requests connections between two stops and prints the results.
 
 =over
 
+=item B<-d>, B<--date> I<dd.mm.>[I<yyyy>]
+
+Request connections for a specific day.
+Default: today.
+
+=item B<-f>, B<--full-route>
+
+Show intermediate stops rather than just start/end of connection legs.
+
 =item B<--json>
 
 Print result(s) as JSON and exit. This is a dump of internal data structures
 and not guaranteed to remain stable between minor versions. Please use the
 Travel::Status::DE::DBRIS(3pm) module if you need a proper API.
+
+=item B<-l>, B<--language> I<lang>
+
+Tell bahn.de to provide messages in I<lang> (ISO 639-1 language code).
+Known supported languages are: cs da de en es fr it nl pl.
+Default: de.
+
+=item B<-m>, B<--modes-of-transit> I<mot1>[,I<mot2>,...]
+
+Only show connections with the specified modes of transit.
+Supported modes of transit are:
+ICE, EC_IC, IR, REGIONAL, SBAHN, BUS, SCHIFF, UBAHN, TRAM, ANRUFPFLICHTIG.
+Default: all modes.
 
 =item B<--no-cache>
 
@@ -375,6 +397,7 @@ Useful for debugging and development purposes.
 
 =item B<-t>, B<--time> I<HH:MM>
 
+Request connections on or after I<HH:MM>.
 Default: now.
 
 =item B<-V>, B<--version>

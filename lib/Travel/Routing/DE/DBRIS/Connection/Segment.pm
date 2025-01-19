@@ -20,7 +20,7 @@ Travel::Routing::DE::DBRIS::Connection::Segment->mk_ro_accessors(
 	  sched_duration rt_duration duration duration_percent
 	  journey_id
 	  occupancy occupancy_first occupancy_second
-	  is_transfer distance_m
+	  is_transfer is_walk walk_name distance_m
 	)
 );
 
@@ -40,6 +40,7 @@ sub new {
 		train_mid   => $json->{verkehrsmittel}{mittelText},
 		train_long  => $json->{verkehrsmittel}{langText},
 		direction   => $json->{verkehrsmittel}{richtung},
+		distance_m  => $json->{distanz},
 	};
 
 	if ( my $ts = $json->{abfahrtsZeitpunkt} ) {
@@ -58,14 +59,18 @@ sub new {
 	}
 	$ref->{arr} = $ref->{rt_arr} // $ref->{sched_arr};
 
-	if ( my $d = $json->{abschnittsDauerInSeconds} ) {
+	# PUBLICTRANSPORT uses abschnittsDauerInSeconds; WALK uses abschnittsDauer
+	if ( my $d = $json->{abschnittsDauerInSeconds} // $json->{abschnittsDauer} )
+	{
 		$ref->{sched_duration} = DateTime::Duration->new(
 			hours   => int( $d / 3600 ),
 			minutes => int( ( $d % 3600 ) / 60 ),
 			seconds => $d % 60,
 		);
 	}
-	if ( my $d = $json->{ezAbschnittsDauerInSeconds} ) {
+	if ( my $d = $json->{ezAbschnittsDauerInSeconds}
+		// $json->{ezAbschnittsDauer} )
+	{
 		$ref->{rt_duration} = DateTime::Duration->new(
 			hours   => int( $d / 3600 ),
 			minutes => int( ( $d % 3600 ) / 60 ),
@@ -104,11 +109,14 @@ sub new {
 		);
 	}
 
+	if ( $json->{verkehrsmittel}{typ} eq 'WALK' ) {
+		$ref->{is_walk}   = 1;
+		$ref->{walk_name} = $json->{verkehrsmittel}{name};
+	}
 	if ( $json->{verkehrsmittel}{typ} eq 'TRANSFER' ) {
 		$ref->{is_transfer} = 1;
 		$ref->{transfer_notes}
 		  = [ map { $_->{value} } @{ $json->{transferNotes} // [] } ];
-		$ref->{distance_m} = $json->{distanz};
 	}
 
 	bless( $ref, $obj );

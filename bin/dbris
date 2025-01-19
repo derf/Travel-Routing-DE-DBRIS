@@ -220,6 +220,10 @@ for my $connection ( $ris->connections ) {
 		elsif ( $segment->is_transfer ) {
 			$header .= sprintf( '  %.1fkm', $segment->distance_m / 1e3 );
 		}
+		elsif ( $segment->is_walk ) {
+
+			# not shown in header
+		}
 		else {
 			$header .= q{  ??};
 		}
@@ -244,6 +248,12 @@ for my $connection ( $ris->connections ) {
 				say $note;
 			}
 		}
+		elsif ( $segment->is_walk ) {
+			printf( "${output_bold}%s${output_reset} %dm  (≈ %d min.)\n",
+				$segment->walk_name, $segment->distance_m,
+				$segment->duration->in_units('minutes') );
+			next;
+		}
 		elsif ( $segment->direction ) {
 			printf( "${output_bold}%s${output_reset} → %s  %s\n",
 				$segment->train_mid, $segment->direction,
@@ -252,6 +262,7 @@ for my $connection ( $ris->connections ) {
 		else {
 			printf( "${output_bold}%s${output_reset}\n", $segment->train_long );
 		}
+
 		printf( "%s  ab  %s\n",
 			$segment->dep->strftime('%H:%M'),
 			$segment->dep_name );

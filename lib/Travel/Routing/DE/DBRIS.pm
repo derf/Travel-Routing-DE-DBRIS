@@ -63,7 +63,7 @@ sub new {
 		ankunftsHalt     => $conf{to}->id,
 		anfrageZeitpunkt => $dt->strftime('%Y-%m-%dT%H:%M:00'),
 		ankunftSuche     => 'ABFAHRT',
-		klasse           => 'KLASSE_2',
+		klasse           => $conf{first_class} ? 'KLASSE_1' : 'KLASSE_2',
 		produktgattungen => \@mots,
 		reisende         => [
 			{

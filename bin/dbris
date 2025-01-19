@@ -368,7 +368,7 @@ Show intermediate stops rather than just start/end of connection legs.
 
 Print result(s) as JSON and exit. This is a dump of internal data structures
 and not guaranteed to remain stable between minor versions. Please use the
-Travel::Status::DE::DBRIS(3pm) module if you need a proper API.
+Travel::Routing::DE::DBRIS(3pm) module if you need a proper API.
 
 =item B<-l>, B<--language> I<lang>
 
@@ -386,7 +386,7 @@ Default: all modes.
 =item B<--no-cache>
 
 By default, if the Cache::File module is available, server replies are cached
-for 90 seconds in F<~/.cache/Travel-Status-DE-DBRIS> (or a path relative to
+for 90 seconds in F<~/.cache/Travel-Routing-DE-DBRIS> (or a path relative to
 C<$XDG_CACHE_HOME>, if set). Use this option to disable caching. You can use
 B<--cache> to re-enable it.
 
@@ -423,6 +423,10 @@ None.
 =item * DateTime(3pm)
 
 =item * LWP::UserAgent(3pm)
+
+=item * Travel::Routing::DE::DBRIS(3pm)
+
+=item * Travel::Status::DE::DBRIS(3pm)
 
 =back
 

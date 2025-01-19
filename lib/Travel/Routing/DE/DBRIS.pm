@@ -86,6 +86,14 @@ sub new {
 		deutschlandTicketVorhanden        => \0
 	};
 
+	for my $via ( @{ $conf{via} } ) {
+		my $via_stop = { id => $via->{stop}->id };
+		if ( $via->{duration} ) {
+			$via_stop->{aufenthaltsdauer} = 0 + $via->{duration};
+		}
+		push( @{ $req->{zwischenhalte} }, $via_stop );
+	}
+
 	if ( @{ $conf{discounts} // [] } ) {
 		$req->{reisende}[0]{ermaessigungen} = [];
 	}
@@ -345,6 +353,13 @@ the requested itinerary.
 
 A Travel::Status::DE::DBRIS::Location(3pm) instance describing the destination
 of the requested itinerary.
+
+=item B<via> => I<arrayref>
+
+An arrayref containing up to two hashrefs that describe stopovers which must
+be part of the requested itinerary. Each hashref consists of two keys:
+B<stop> (Travel::Status::DE::DBRIS::Location(3pm) object, mandatory) and
+B<duration> (stopover duration in minutes, optional, default: 0).
 
 =item B<cache> => I<cache>
 

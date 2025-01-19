@@ -37,8 +37,8 @@ sub new {
 	}
 
 	my $self = {
+		cache          => $conf{cache},
 		developer_mode => $conf{developer_mode},
-		results        => [],
 		from           => $conf{from},
 		to             => $conf{to},
 		ua             => $ua,
@@ -117,7 +117,7 @@ sub new {
 		time_zone => 'Europe/Berlin',
 	);
 
-	my $json = $self->{json} = JSON->new->utf8;
+	my $json = $self->{json} = JSON->new->utf8->canonical;
 
 	if ( $conf{async} ) {
 		$self->{req} = $req;

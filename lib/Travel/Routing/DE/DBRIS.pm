@@ -369,7 +369,7 @@ Default: ICE, EC_IC, IR, REGIONAL, SBAHN, BUS, SCHIFF, UBAHN, TRAM, ANRUFPFLICHT
 =item B<discounts> => I<arrayref>
 
 Consider discounts specified in I<arrayref> when determining offer prices.
-Supported items: bc25, bs25-first, bc50, bc50-first, bc100, bc100-first.
+Supported items: bc25, bc25-first, bc50, bc50-first, bc100, bc100-first.
 Default: none.
 
 =item B<user_agent> => I<user agent>

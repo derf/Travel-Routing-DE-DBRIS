@@ -204,7 +204,7 @@ sub post_with_cache {
 	}
 
 	if ($cache) {
-		my $content = $cache->thaw($url);
+		my $content = $cache->thaw("$url $req");
 		if ($content) {
 			if ( $self->{developer_mode} ) {
 				say '  cache hit';
@@ -232,7 +232,7 @@ sub post_with_cache {
 	my $content = $reply->content;
 
 	if ($cache) {
-		$cache->freeze( $url, \$content );
+		$cache->freeze( "$url $req", \$content );
 	}
 
 	return ( $content, undef );

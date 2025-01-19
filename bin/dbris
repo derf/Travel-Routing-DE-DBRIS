@@ -50,7 +50,7 @@ GetOptions(
 
 if ($use_cache) {
 	my $cache_path = ( $ENV{XDG_CACHE_HOME} // "$ENV{HOME}/.cache" )
-	  . '/Travel-Status-DE-DBRIS';
+	  . '/Travel-Routing-DE-DBRIS';
 	eval {
 		require Cache::File;
 		$cache = Cache::File->new(

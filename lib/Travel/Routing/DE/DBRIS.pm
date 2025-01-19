@@ -9,7 +9,6 @@ use utf8;
 
 use parent 'Class::Accessor';
 
-use Carp qw(confess);
 use DateTime;
 use DateTime::Format::Strptime;
 use Encode qw(decode encode);

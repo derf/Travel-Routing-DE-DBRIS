@@ -301,63 +301,12 @@ version 0.01
 
 =head1 DESCRIPTION
 
-B<dbris-m> is an interface to the public transport services available on
-bahn.de. According to word of mouth, it uses the HAFAS backend that can also
-be accessed by Travel::Status::DE::HAFAS(3pm)'s DB service. However, the
-bahn.de entry point is likely more reliable in the long run.
-
-B<dbris-m> can serve as an arrival/departure monitor, request details about a
-specific trip, and look up public transport stops by name or geolocation. The
-operating mode depends on the contents of its non-option argument.
-
-=head2 Departure Monitor (I<station>)
-
-Show departures at I<station>. I<station> may be given as a station name or
-station ID.  For each departure, B<dbris-m> shows
-
-=over
-
-=item * estimated departure time,
-
-=item * delay, if known,
-
-=item * trip name, number, or line,
-
-=item * direction / destination, and
-
-=item * platform, if known.
-
-=back
-
-=head2 Trip details (I<JourneyID>)
-
-List intermediate stops of I<JourneyID> (as given by the departure monitor when
-invoed with B<-j> / B<--with-jid>) with arrival/departure time, delay (if
-available), occupancy (if available), and stop name. Also includes some generic
-trip information.
-
-=head2 Location Search (B<?>I<query>|I<lat>B<:>I<lon>)
-
-List stations that match I<query> or that are located in the vicinity of
-I<lat>B<:>I<lon> geocoordinates with station ID and name.
+B<dbris> is an interface to the public transport routing service available on
+bahn.de. It requests connections between two stops and prints the results.
 
 =head1 OPTIONS
 
-Values in brackets indicate options that only apply to the corresponding
-operating mode(s).
-
 =over
-
-=item B<-d>, B<--date> I<DD.MM.[YYYY]> (departure monitor)
-
-Request departures on the specified date.
-Default: today.
-
-=item B<-j>, B<--with-jid> (departure monitor)
-
-Show JourneyID for each listed arrival/departure.
-These can be used to obtain details on individual trips with subsequent
-B<dbris-m> invocations.
 
 =item B<--json>
 
@@ -377,9 +326,8 @@ B<--cache> to re-enable it.
 Print unprocessed API response as JSON and exit.
 Useful for debugging and development purposes.
 
-=item B<-t>, B<--date> I<HH:MM> (departure monitor)
+=item B<-t>, B<--time> I<HH:MM>
 
-Request departures on or after the specified time.
 Default: now.
 
 =item B<-V>, B<--version>

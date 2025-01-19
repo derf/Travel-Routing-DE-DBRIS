@@ -36,11 +36,14 @@ sub new {
 		$ua->env_proxy;
 	}
 
+	# Supported Languages: de cs da en es fr it nl pl
+
 	my $self = {
 		cache          => $conf{cache},
 		developer_mode => $conf{developer_mode},
 		from           => $conf{from},
 		to             => $conf{to},
+		language       => $conf{language} // 'de',
 		ua             => $ua,
 	};
 
@@ -53,6 +56,10 @@ sub new {
 		@mots = @{ $conf{modes_of_transit} // [] };
 	}
 
+	my $req_url
+	  = $self->{language} eq 'de'
+	  ? 'https://www.bahn.de/web/api/angebote/fahrplan'
+	  : 'https://int.bahn.de/web/api/angebote/fahrplan';
 	my $req = {
 		abfahrtsHalt     => $conf{from}->id,
 		ankunftsHalt     => $conf{to}->id,
@@ -133,9 +140,7 @@ sub new {
 			say "requesting $req_str";
 		}
 
-		my ( $content, $error )
-		  = $self->post_with_cache(
-			'https://www.bahn.de/web/api/angebote/fahrplan', $req_str );
+		my ( $content, $error ) = $self->post_with_cache( $req_url, $req_str );
 
 		if ($error) {
 			$self->{errstr} = $error;
@@ -214,15 +219,10 @@ sub post_with_cache {
 
 	my $reply = $self->{ua}->post(
 		$url,
-		Accept           => 'application/json',
-		'Content-Type'   => 'application/json; charset=utf-8',
-		Origin           => 'https://www.bahn.de',
-		Referer          => 'https://www.bahn.de/buchung/fahrplan/suche',
-		'Sec-Fetch-Dest' => 'empty',
-		'Sec-Fetch-Mode' => 'cors',
-		'Sec-Fetch-Site' => 'same-origin',
-		TE               => 'trailers',
-		Content          => $req,
+		Accept            => 'application/json',
+		'Accept-Language' => $self->{language},
+		'Content-Type'    => 'application/json; charset=utf-8',
+		Content           => $req,
 	);
 
 	if ( $reply->is_error ) {

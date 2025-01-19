@@ -14,7 +14,7 @@ use List::Util   qw(max);
 use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS;
 
-my ( $date, $time, $from, $to );
+my ( $date, $time, $from, $to, $language );
 my $mots;
 my $discounts;
 my $developer_mode;
@@ -39,6 +39,7 @@ GetOptions(
 	'h|help'               => sub { show_help(0) },
 	'f|full-route'         => \$show_full_route,
 	'm|modes-of-transit=s' => \$mots,
+	'l|language=s'         => \$language,
 	't|time=s'             => \$time,
 	'V|version'            => \&show_version,
 	'cache!'               => \$use_cache,
@@ -94,6 +95,7 @@ sub get_stop {
 my %opt = (
 	from           => get_stop($from_raw),
 	to             => get_stop($to_raw),
+	language       => $language,
 	cache          => $cache,
 	developer_mode => $developer_mode,
 );

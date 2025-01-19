@@ -16,26 +16,27 @@ Module::Build->new(
 	},
 	module_name => 'Travel::Routing::DE::DBRIS',
 	license     => 'perl',
-	recommends => {
+	recommends  => {
 		'Cache::File' => 0,
 	},
-	requires    => {
-		'perl'                       => '5.20.0',
-		'Class::Accessor'            => '0.16',
-		'DateTime'                   => 0,
-		'DateTime::Format::Strptime' => 0,
-		'Getopt::Long'               => 0,
-		'JSON'                       => 0,
-		'List::Util'                 => 0,
-		'LWP::UserAgent'             => 0,
-		'LWP::Protocol::https'       => 0,
+	requires => {
+		'perl'                                => '5.20.0',
+		'Class::Accessor'                     => '0.16',
+		'DateTime'                            => 0,
+		'DateTime::Duration'                  => 0,
+		'DateTime::Format::Strptime'          => 0,
+		'Getopt::Long'                        => 0,
+		'JSON'                                => 0,
+		'List::Util'                          => 0,
+		'LWP::UserAgent'                      => 0,
+		'LWP::Protocol::https'                => 0,
+		'Travel::Status::DE::DBRIS'           => '0.10',
+		'Travel::Status::DE::DBRIS::Location' => '0.10',
 	},
-	script_files  => 'bin/',
-	sign          => 1,
-	meta_merge    => {
-		resources => {
-			repository =>
-			  'https://github.com/derf/Travel-Routing-DE-DBRIS'
-		}
+	script_files => 'bin/',
+	sign         => 1,
+	meta_merge   => {
+		resources =>
+		  { repository => 'https://github.com/derf/Travel-Routing-DE-DBRIS' }
 	},
 )->create_build_script();

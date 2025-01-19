@@ -109,6 +109,22 @@ sub new {
 		);
 	}
 
+	for my $attr ( @{ $json->{verkehrsmittel}{zugattribute} // [] } ) {
+		push( @{ $ref->{attributes} }, $attr );
+	}
+
+	for my $message ( @{ $json->{himMeldungen} // [] } ) {
+		push( @{ $ref->{messages_him} }, $message );
+	}
+
+	for my $message ( @{ $json->{risNotizen} // [] } ) {
+		push( @{ $ref->{messages_ris} }, $message );
+	}
+
+	for my $message ( @{ $json->{priorisierteMeldungen} // [] } ) {
+		push( @{ $ref->{messages_prio} }, $message );
+	}
+
 	if ( $json->{verkehrsmittel}{typ} eq 'WALK' ) {
 		$ref->{is_walk}   = 1;
 		$ref->{walk_name} = $json->{verkehrsmittel}{name};
@@ -122,6 +138,30 @@ sub new {
 	bless( $ref, $obj );
 
 	return $ref;
+}
+
+sub attributes {
+	my ($self) = @_;
+
+	return @{ $self->{attributes} // [] };
+}
+
+sub messages_him {
+	my ($self) = @_;
+
+	return @{ $self->{messages_him} // [] };
+}
+
+sub messages_ris {
+	my ($self) = @_;
+
+	return @{ $self->{messages_ris} // [] };
+}
+
+sub messages_prio {
+	my ($self) = @_;
+
+	return @{ $self->{messages_prio} // [] };
 }
 
 sub route {

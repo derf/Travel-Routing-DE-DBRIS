@@ -189,8 +189,12 @@ sub format_occupancy {
 
 sub format_delay {
 	my ( $delay, $len ) = @_;
+	$len += 1;
 	if ( $delay and $len ) {
 		return sprintf( "(%+${len}d)", $delay );
+	}
+	elsif ($len) {
+		return q{ } x ( $len + 2 );
 	}
 	return q{};
 }
@@ -231,6 +235,19 @@ for my $connection ( $ris->connections ) {
 		}
 	}
 
+	my $max_delay_digits = max
+	  map { length( $_->dep_delay || q{} ), length( $_->arr_delay || q{} ) }
+	  $connection->segments;
+	if ($show_full_route) {
+		my $max_route_delay_digits = max map {
+			map { length( $_->arr_delay || q{} ) }
+			  $_->route
+		} $connection->segments;
+		if ( $max_route_delay_digits > $max_delay_digits ) {
+			$max_delay_digits = $max_route_delay_digits;
+		}
+	}
+
 	say q{};
 	printf(
 		"%s  (%02d:%02d)  %s  %s%s%s\n\n",
@@ -251,9 +268,20 @@ for my $connection ( $ris->connections ) {
 			}
 		}
 		elsif ( $segment->is_walk ) {
-			printf( "${output_bold}%s${output_reset} %dm  (≈ %d min.)\n",
-				$segment->walk_name, $segment->distance_m,
-				$segment->duration->in_units('minutes') );
+			if ( $segment->distance_m ) {
+				printf( "${output_bold}%s${output_reset} %dm  (≈ %d min.)\n",
+					$segment->walk_name, $segment->distance_m,
+					$segment->duration->in_units('minutes') );
+			}
+			elsif ( $segment->duration->in_units('minutes') ) {
+				printf( "${output_bold}%s${output_reset} ≈ %d min.\n",
+					$segment->walk_name,
+					$segment->duration->in_units('minutes') );
+			}
+			else {
+				printf( "${output_bold}%s${output_reset}\n",
+					$segment->walk_name );
+			}
 			next;
 		}
 		elsif ( $segment->direction ) {
@@ -265,16 +293,24 @@ for my $connection ( $ris->connections ) {
 			printf( "${output_bold}%s${output_reset}\n", $segment->train_long );
 		}
 
-		printf( "%s  ab  %s%s\n",
+		printf(
+			"%s%s  ab  %s%s\n",
 			$segment->dep->strftime('%H:%M'),
+			$max_delay_digits
+			? q{ } . format_delay( $segment->dep_delay, $max_delay_digits )
+			: q{},
 			$segment->dep_name,
 			$segment->dep_platform ? q{  } . $segment->dep_platform : q{},
 		);
 
 		if ($show_full_route) {
 			for my $stop ( $segment->route ) {
-				printf( "%s  %s  %s%s\n",
+				printf(
+					"%s%s  %s  %s%s\n",
 					$stop->arr ? $stop->arr->strftime('%H:%M') : q{     },
+					$max_delay_digits
+					? q{ } . format_delay( $stop->arr_delay, $max_delay_digits )
+					: q{},
 					format_occupancy($stop),
 					$stop->name,
 					$stop->platform ? q{  } . $stop->platform : q{},
@@ -282,8 +318,12 @@ for my $connection ( $ris->connections ) {
 			}
 		}
 
-		printf( "%s  an  %s%s\n",
+		printf(
+			"%s%s  an  %s%s\n",
 			$segment->arr->strftime('%H:%M'),
+			$max_delay_digits
+			? q{ } . format_delay( $segment->arr_delay, $max_delay_digits )
+			: q{},
 			$segment->arr_name,
 			$segment->arr_platform ? q{  } . $segment->arr_platform : q{},
 		);

@@ -18,6 +18,7 @@ Travel::Routing::DE::DBRIS::Connection::Segment->mk_ro_accessors(
 	  sched_dep rt_dep dep dep_platform
 	  sched_arr rt_arr arr arr_platform
 	  sched_duration rt_duration duration duration_percent
+	  arr_delay dep_delay delay
 	  journey_id
 	  occupancy occupancy_first occupancy_second
 	  is_transfer is_walk walk_name distance_m
@@ -58,6 +59,20 @@ sub new {
 		$ref->{rt_arr} = $strptime->parse_datetime($ts);
 	}
 	$ref->{arr} = $ref->{rt_arr} // $ref->{sched_arr};
+
+	if ( $ref->{sched_dep} and $ref->{rt_dep} ) {
+		$ref->{dep_delay}
+		  = $ref->{rt_dep}->subtract_datetime( $ref->{sched_dep} )
+		  ->in_units('minutes');
+	}
+
+	if ( $ref->{sched_arr} and $ref->{rt_arr} ) {
+		$ref->{arr_delay}
+		  = $ref->{rt_arr}->subtract_datetime( $ref->{sched_arr} )
+		  ->in_units('minutes');
+	}
+
+	$ref->{delay} = $ref->{arr_delay} // $ref->{dep_delay};
 
 	# PUBLICTRANSPORT uses abschnittsDauerInSeconds; WALK uses abschnittsDauer
 	if ( my $d = $json->{abschnittsDauerInSeconds} // $json->{abschnittsDauer} )

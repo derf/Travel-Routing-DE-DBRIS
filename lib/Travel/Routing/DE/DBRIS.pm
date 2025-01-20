@@ -21,6 +21,12 @@ our $VERSION = '0.01';
 
 Travel::Routing::DE::DBRIS->mk_ro_accessors(qw(earlier later));
 
+my %passenger_type_map = (
+	adult  => 'ERWACHSENER',
+	junior => 'JUGENDLICHER',
+	senior => 'SENIOR',
+);
+
 # {{{ Constructors
 
 sub new {
@@ -94,30 +100,50 @@ sub new {
 		push( @{ $req->{zwischenhalte} }, $via_stop );
 	}
 
-	if ( @{ $conf{discounts} // [] } ) {
-		$req->{reisende}[0]{ermaessigungen} = [];
+	if ( @{ $conf{passengers} // [] } ) {
+		$req->{reisende} = [];
 	}
-	for my $discount ( @{ $conf{discounts} // [] } ) {
-		my ( $type, $class );
-		for my $num (qw(25 50 100)) {
-			if ( $discount eq "bc${num}" ) {
-				$type  = "BAHNCARD${num}";
-				$class = 'KLASSE_2';
-			}
-			elsif ( $discount eq "bc${num}-first" ) {
-				$type  = "BAHNCARD${num}";
-				$class = 'KLASSE_1';
-			}
+
+	for my $passenger ( @{ $conf{passengers} // [] } ) {
+		if ( not $passenger_type_map{ $passenger->{type} } ) {
+			die("Unknown passenger type: '$passenger->{type}'");
 		}
-		if ($type) {
-			push(
-				@{ $req->{reisende}[0]{ermaessigungen} },
-				{
-					art    => $type,
-					klasse => $class,
+		my $entry = {
+			typ    => $passenger_type_map{ $passenger->{type} },
+			alter  => [],
+			anzahl => 1
+		};
+		for my $discount ( @{ $passenger->{discounts} // [] } ) {
+			my ( $type, $class );
+			for my $num (qw(25 50 100)) {
+				if ( $discount eq "bc${num}" ) {
+					$type  = "BAHNCARD${num}";
+					$class = 'KLASSE_2';
 				}
-			);
+				elsif ( $discount eq "bc${num}-first" ) {
+					$type  = "BAHNCARD${num}";
+					$class = 'KLASSE_1';
+				}
+			}
+			if ($type) {
+				push(
+					@{ $entry->{ermaessigungen} },
+					{
+						art    => $type,
+						klasse => $class,
+					}
+				);
+			}
 		}
+		if ( not @{ $entry->{ermaessigungen} // [] } ) {
+			$entry->{ermaessigungen} = [
+				{
+					art    => 'KEINE_ERMAESSIGUNG',
+					klasse => 'KLASSENLOS'
+				}
+			];
+		}
+		push( @{ $req->{reisende} }, $entry );
 	}
 
 	$self->{strptime_obj} //= DateTime::Format::Strptime->new(
@@ -381,11 +407,15 @@ Default: de.
 Only request connections using the modes of transit specified in I<arrayref>.
 Default: ICE, EC_IC, IR, REGIONAL, SBAHN, BUS, SCHIFF, UBAHN, TRAM, ANRUFPFLICHTIG.
 
-=item B<discounts> => I<arrayref>
+=item B<passengers> => I<arrayref>
 
-Consider discounts specified in I<arrayref> when determining offer prices.
-Supported items: bc25, bc25-first, bc50, bc50-first, bc100, bc100-first.
-Default: none.
+Use passengers as defined by I<arrayref> when determining offer prices.  Each
+entry describes a single person with a B<type> (string) and B<discounts>
+(arrayref). B<type> must be B<adult> (27 to 64 years old), B<junior> (15 to 26
+years old), or B<senior> (65 years or older). Supported discounts are: bc25,
+bc25-first, bc50, bc50-first, bc100, bc100-first.
+
+Default: single adult, no discounts.
 
 =item B<user_agent> => I<user agent>
 

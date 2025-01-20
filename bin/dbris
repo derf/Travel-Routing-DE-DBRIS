@@ -16,7 +16,7 @@ use Travel::Routing::DE::DBRIS;
 
 my ( $date, $time, $from, $to, $language );
 my $mots;
-my ( $first_class, $discounts );
+my ( $first_class, $passengers );
 my $developer_mode;
 my ( $json_output, $raw_json_output );
 my $use_cache = 1;
@@ -36,12 +36,12 @@ my $output_reset = -t STDOUT ? "\033[0m" : q{};
 
 GetOptions(
 	'd|date=s'             => \$date,
-	'D|discounts=s'        => \$discounts,
 	'h|help'               => sub { show_help(0) },
 	'f|full-route'         => \$show_full_route,
 	'first-class!'         => \$first_class,
 	'm|modes-of-transit=s' => \$mots,
 	'l|language=s'         => \$language,
+	'p|passengers=s'       => \$passengers,
 	't|time=s'             => \$time,
 	'V|version'            => \&show_version,
 	'cache!'               => \$use_cache,
@@ -177,8 +177,18 @@ if ($mots) {
 	$opt{modes_of_transit} = [ grep { $known_mot{$_} } @mots ];
 }
 
-if ($discounts) {
-	$opt{discounts} = [ split( qr{, *}, $discounts ) ];
+if ($passengers) {
+	for my $passenger ( split( qr{; *}, $passengers ) ) {
+		my ( $type, $discounts ) = split( qr{ *: *}, $passenger );
+		$discounts = $discounts ? [ split( qr{, *}, $discounts ) ] : [];
+		push(
+			@{ $opt{passengers} },
+			{
+				type      => $type,
+				discounts => $discounts,
+			}
+		);
+	}
 }
 
 sub show_help {
@@ -293,7 +303,7 @@ for my $connection ( $ris->connections ) {
 		$connection->duration->in_units( 'hours', 'minutes' ),
 		$connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
 		format_occupancy($connection),
-		defined $connection->price
+		( defined $passengers and defined $connection->price )
 		? sprintf( '  %.2f %s', $connection->price, $connection->price_unit )
 		: q{},
 		$header,

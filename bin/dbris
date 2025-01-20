@@ -23,7 +23,6 @@ my $use_cache = 1;
 my $show_full_route;
 my $cache;
 
-my @output;
 my %known_mot = map { $_ => 1 }
   (qw(ICE EC_IC IR REGIONAL SBAHN BUS SCHIFF UBAHN TRAM ANRUFPFLICHTIG));
 

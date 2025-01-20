@@ -24,6 +24,8 @@ my $show_full_route;
 my $cache;
 
 my @output;
+my %known_mot = map { $_ => 1 }
+  (qw(ICE EC_IC IR REGIONAL SBAHN BUS SCHIFF UBAHN TRAM ANRUFPFLICHTIG));
 
 binmode( STDOUT, ':encoding(utf-8)' );
 for my $arg (@ARGV) {
@@ -158,7 +160,22 @@ if ( $date or $time ) {
 }
 
 if ($mots) {
-	$opt{modes_of_transit} = [ split( qr{, *}, $mots ) ];
+
+	# Passing unknown MOTs to the backend results in HTTP 422 Unprocessable Entity
+	my @mots = split( qr{, *}, $mots );
+	my $found_unknown;
+	for my $mot (@mots) {
+		if ( not $known_mot{$mot} ) {
+			$found_unknown = 1;
+			say STDERR
+"-m / --modes-of-transit: skipping unknown mode of transit '$mot'";
+		}
+	}
+	if ($found_unknown) {
+		say STDERR 'supported modes of transit are: '
+		  . join( q{, }, sort keys %known_mot );
+	}
+	$opt{modes_of_transit} = [ grep { $known_mot{$_} } @mots ];
 }
 
 if ($discounts) {

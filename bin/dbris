@@ -158,6 +158,14 @@ if ( $date or $time ) {
 	$opt{datetime} = $dt;
 }
 
+if ( $mots and $mots eq 'help' ) {
+	say "Supported modes of transmit (-m / --modes-of-transit):";
+	for my $mot ( sort keys %known_mot ) {
+		say $mot;
+	}
+	exit 0;
+}
+
 if ($mots) {
 
 	# Passing unknown MOTs to the backend results in HTTP 422 Unprocessable Entity

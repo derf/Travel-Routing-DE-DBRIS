@@ -13,7 +13,7 @@ use Travel::Routing::DE::DBRIS::Connection::Segment;
 our $VERSION = '0.02';
 
 Travel::Routing::DE::DBRIS::Connection->mk_ro_accessors(
-	qw(changes
+	qw(changes feasibility is_cancelled is_unscheduled is_unlikely
 	  duration sched_duration rt_duration
 	  sched_dep rt_dep dep
 	  sched_arr rt_arr arr
@@ -30,11 +30,14 @@ sub new {
 	my $strptime = $opt{strptime_obj};
 
 	my $ref = {
-		changes      => $json->{umstiegsAnzahl},
-		id           => $json->{tripId},
-		price        => $json->{angebotsPreis}{betrag},
-		price_unit   => $json->{angebotsPreis}{waehrung},
-		strptime_obj => $strptime,
+		changes     => $json->{umstiegsAnzahl},
+		feasibility => $json->{ereignisZusammenfassung}{anschlussBewertungCode}
+		  // -1,
+		is_unscheduled => $json->{isAlternativeVerbindung},
+		id             => $json->{tripId},
+		price          => $json->{angebotsPreis}{betrag},
+		price_unit     => $json->{angebotsPreis}{waehrung},
+		strptime_obj   => $strptime,
 	};
 
 	if ( $ref->{price_unit} and $ref->{price_unit} eq 'EUR' ) {

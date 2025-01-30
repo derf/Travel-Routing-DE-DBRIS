@@ -35,6 +35,18 @@ for my $arg (@ARGV) {
 my $output_bold  = -t STDOUT ? "\033[1m" : q{};
 my $output_reset = -t STDOUT ? "\033[0m" : q{};
 
+my $output_fyi      = -t STDOUT ? "\033[40;36m" : q{};
+my $output_unknown  = -t STDOUT ? "\033[40;35m" : q{};
+my $output_good     = -t STDOUT ? "\033[40;32m" : q{};
+my $output_warning  = -t STDOUT ? "\033[40;33m" : q{};
+my $output_critical = -t STDOUT ? "\033[40;31m" : q{};
+
+my $output_bold_fyi      = -t STDOUT ? "\033[1;40;36m" : q{};
+my $output_bold_unknown  = -t STDOUT ? "\033[1;40;35m" : q{};
+my $output_bold_good     = -t STDOUT ? "\033[1;40;32m" : q{};
+my $output_bold_warning  = -t STDOUT ? "\033[1;40;33m" : q{};
+my $output_bold_critical = -t STDOUT ? "\033[1;40;31m" : q{};
+
 GetOptions(
 	'd|date=s'             => \$date,
 	'h|help'               => sub { show_help(0) },
@@ -276,6 +288,27 @@ if ($json_output) {
 for my $connection ( $ris->connections ) {
 
 	my $header = q{};
+	my $format = $output_bold;
+
+	if ( $connection->is_unlikely ) {
+		if ( $connection->feasibility >= 4 ) {
+			$header .= "  ${output_critical}XX${output_reset}";
+			$format = $output_bold_critical;
+		}
+		else {
+			$header .= "  ${output_warning}X?${output_reset}";
+			$format = $output_bold_warning;
+		}
+	}
+	if ( $connection->is_cancelled ) {
+		$format = $output_bold_critical;
+	}
+
+	if ( defined $passengers and defined $connection->price ) {
+		$header .= sprintf( '  %.2f %s', $connection->price,
+			$connection->price_unit );
+	}
+
 	for my $segment ( $connection->segments ) {
 		if ( $segment->train_short ) {
 			$header .= sprintf( '  %s', $segment->train_short );
@@ -307,15 +340,19 @@ for my $connection ( $ris->connections ) {
 
 	say q{};
 	printf(
-		"%s  (%02d:%02d)  %s  %s%s%s\n\n",
-		$connection->dep ? $connection->dep->strftime('%d.%m. %H:%M')
-		: q{??.??. ??:??},
+		"%s %s%s%s  (%02d:%02d)  %s%s%s  %s%s\n",
+		$connection->dep ? $connection->dep->strftime('%d.%m.')
+		: q{??.??.},
+		$format,
+		$connection->dep ? $connection->dep->strftime('%H:%M')
+		: q{??:??},
+		$output_reset,
 		$connection->duration->in_units( 'hours', 'minutes' ),
+		$format,
 		$connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
-		format_occupancy($connection),
-		( defined $passengers and defined $connection->price )
-		? sprintf( '  %.2f %s', $connection->price, $connection->price_unit )
-		: q{},
+		$output_reset,
+		$connection->is_cancelled ? "${output_critical}XX${output_reset}"
+		: format_occupancy($connection),
 		$header,
 	);
 
@@ -389,8 +426,10 @@ for my $connection ( $ris->connections ) {
 		}
 
 		printf(
-			"%s%s  an  %s%s\n",
+			"%s%s%s%s  an  %s%s\n",
+			$segment->is_unlikely ? $output_critical : q{},
 			$segment->arr->strftime('%H:%M'),
+			$segment->is_unlikely ? $output_reset : q{},
 			$max_delay_digits
 			? q{ } . format_delay( $segment->arr_delay, $max_delay_digits )
 			: q{},

@@ -19,6 +19,7 @@ my $mots;
 my ( $first_class, $passengers );
 my $developer_mode;
 my ( $json_output, $raw_json_output );
+my $verbose;
 my $use_cache = 1;
 my $show_full_route;
 my $cache;
@@ -43,6 +44,7 @@ GetOptions(
 	'l|language=s'         => \$language,
 	'p|passengers=s'       => \$passengers,
 	't|time=s'             => \$time,
+	'v|verbose'            => \$verbose,
 	'V|version'            => \&show_version,
 	'cache!'               => \$use_cache,
 	'devmode'              => \$developer_mode,
@@ -316,6 +318,19 @@ for my $connection ( $ris->connections ) {
 		: q{},
 		$header,
 	);
+
+	if ($verbose) {
+		for my $note ( $connection->notes ) {
+			printf( "| %s (%s)\n", $note->{value}, $note->{key} );
+		}
+
+		for my $msg ( $connection->messages ) {
+			printf( "| %s\n", $msg->{text} );
+		}
+	}
+
+	say q{};
+
 	for my $segment ( $connection->segments ) {
 		if ( $segment->is_transfer ) {
 			for my $note ( $segment->transfer_notes ) {
@@ -382,6 +397,19 @@ for my $connection ( $ris->connections ) {
 			$segment->arr_name,
 			$segment->arr_platform ? q{  } . $segment->arr_platform : q{},
 		);
+
+		if ($verbose) {
+			for my $msg ( $segment->messages_ris ) {
+				printf( "| %s (%s)\n", $msg->{value}, $msg->{key} );
+			}
+			for my $msg ( $segment->messages_him ) {
+				printf( "| %s\n", $msg->{text} );
+			}
+			for my $msg ( $segment->messages_prio ) {
+				printf( "| %s\n", $msg->{text} );
+			}
+		}
+
 		say q{};
 	}
 	say q{---------------------------------------};

@@ -94,6 +94,19 @@ sub new {
 		$ref->{$key} = $ref->{segments}[-1]{$key};
 	}
 
+	for my $note ( @{ $json->{risNotizen} // [] } ) {
+		push( @{ $ref->{notes} }, $note );
+		if ( $note->{key} eq 'text.realtime.connection.cancelled' ) {
+			$ref->{is_cancelled} = 1;
+		}
+		elsif ( $note->{key} eq 'text.realtime.connection.brokentrip' ) {
+			$ref->{is_unlikely} = 1;
+		}
+	}
+	for my $message ( @{ $json->{messages} // [] } ) {
+		push( @{ $ref->{messages} }, $message );
+	}
+
 	bless( $ref, $obj );
 
 	return $ref;
@@ -103,6 +116,18 @@ sub segments {
 	my ($self) = @_;
 
 	return @{ $self->{segments} // [] };
+}
+
+sub notes {
+	my ($self) = @_;
+
+	return @{ $self->{notes} // [] };
+}
+
+sub messages {
+	my ($self) = @_;
+
+	return @{ $self->{messages} // [] };
 }
 
 sub TO_JSON {

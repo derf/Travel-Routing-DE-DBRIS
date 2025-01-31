@@ -310,6 +310,17 @@ for my $connection ( $ris->connections ) {
 	}
 
 	for my $segment ( $connection->segments ) {
+		if ( defined $segment->transfer_duration ) {
+			if ( $segment->transfer_duration->in_units('minutes') >= 0 ) {
+				$header .= sprintf( '  (%01d:%02d)',
+					$segment->transfer_duration->in_units( 'hours', 'minutes' )
+				);
+			}
+			else {
+				$header .= sprintf( "  ${output_critical}(%02d)${output_reset}",
+					$segment->transfer_duration->in_units('minutes') );
+			}
+		}
 		if ( $segment->train_short ) {
 			$header .= sprintf( '  %s', $segment->train_short );
 		}

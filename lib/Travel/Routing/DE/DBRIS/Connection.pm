@@ -90,6 +90,24 @@ sub new {
 		);
 	}
 
+	for my $i ( 0 .. $#{ $ref->{segments} // [] } - 1 ) {
+		if ( $ref->{segments}[$i]{train_short} ) {
+			my $arr = $ref->{segments}[$i]->arr;
+			for my $j ( $i + 1 .. $#{ $ref->{segments} // [] } ) {
+				if ( $ref->{segments}[$j]{train_short} ) {
+					my $dep = $ref->{segments}[$j]->dep;
+					if ( $arr and $dep ) {
+						$ref->{segments}[$j]{transfer_duration} = $dep - $arr;
+						if ( $dep < $arr ) {
+							$ref->{segments}[$i]{is_unlikely} = 1;
+						}
+					}
+					last;
+				}
+			}
+		}
+	}
+
 	for my $key (qw(sched_dep rt_dep dep)) {
 		$ref->{$key} = $ref->{segments}[0]{$key};
 	}

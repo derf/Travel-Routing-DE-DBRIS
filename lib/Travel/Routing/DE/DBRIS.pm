@@ -16,6 +16,7 @@ use JSON;
 use LWP::UserAgent;
 use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS::Connection;
+use Travel::Routing::DE::DBRIS::Offer;
 
 our $VERSION = '0.03';
 
@@ -60,37 +61,67 @@ sub new {
 		@mots = @{ $conf{modes_of_transit} // [] };
 	}
 
-	my $req_url
-	  = $self->{language} eq 'de'
-	  ? 'https://www.bahn.de/web/api/angebote/fahrplan'
-	  : 'https://int.bahn.de/web/api/angebote/fahrplan';
-	my $req = {
-		abfahrtsHalt     => $conf{from}->id,
-		ankunftsHalt     => $conf{to}->id,
-		anfrageZeitpunkt => $dt->strftime('%Y-%m-%dT%H:%M:00'),
-		ankunftSuche     => $conf{arrival}     ? 'ANKUNFT'  : 'ABFAHRT',
-		klasse           => $conf{first_class} ? 'KLASSE_1' : 'KLASSE_2',
-		produktgattungen => \@mots,
-		reisende         => [
-			{
-				typ            => 'ERWACHSENER',
-				ermaessigungen => [
-					{
-						art    => 'KEINE_ERMAESSIGUNG',
-						klasse => 'KLASSENLOS'
-					},
-				],
-				alter  => [],
-				anzahl => 1,
-			}
-		],
-		schnelleVerbindungen              => \1,
-		sitzplatzOnly                     => \0,
-		bikeCarriage                      => \0,
-		reservierungsKontingenteVorhanden => \0,
-		nurDeutschlandTicketVerbindungen  => \0,
-		deutschlandTicketVorhanden        => \0
-	};
+	my ($req_url, $req);
+
+	if ($conf{from} and $conf{to}) {
+		$req_url
+		= $self->{language} eq 'de'
+		? 'https://www.bahn.de/web/api/angebote/fahrplan'
+		: 'https://int.bahn.de/web/api/angebote/fahrplan';
+		$req = {
+			abfahrtsHalt     => $conf{from}->id,
+			ankunftsHalt     => $conf{to}->id,
+			anfrageZeitpunkt => $dt->strftime('%Y-%m-%dT%H:%M:00'),
+			ankunftSuche     => $conf{arrival}     ? 'ANKUNFT'  : 'ABFAHRT',
+			klasse           => $conf{first_class} ? 'KLASSE_1' : 'KLASSE_2',
+			produktgattungen => \@mots,
+			reisende         => [
+				{
+					typ            => 'ERWACHSENER',
+					ermaessigungen => [
+						{
+							art    => 'KEINE_ERMAESSIGUNG',
+							klasse => 'KLASSENLOS'
+						},
+					],
+					alter  => [],
+					anzahl => 1,
+				}
+			],
+			schnelleVerbindungen              => \1,
+			sitzplatzOnly                     => \0,
+			bikeCarriage                      => \0,
+			reservierungsKontingenteVorhanden => \0,
+			nurDeutschlandTicketVerbindungen  => \0,
+			deutschlandTicketVorhanden        => \0
+		};
+	}
+	elsif ($conf{offers}) {
+		$req_url
+		= $self->{language} eq 'de'
+		? 'https://www.bahn.de/web/api/angebote/recon'
+		: 'https://int.bahn.de/web/api/angebote/recon';
+		$req = {
+			klasse           => $conf{first_class} ? 'KLASSE_1' : 'KLASSE_2',
+			ctxRecon => $conf{offers}{recon},
+			reisende         => [
+				{
+					typ            => 'ERWACHSENER',
+					ermaessigungen => [
+						{
+							art    => 'KEINE_ERMAESSIGUNG',
+							klasse => 'KLASSENLOS'
+						},
+					],
+					alter  => [],
+					anzahl => 1,
+				}
+			],
+			reservierungsKontingenteVorhanden => \0,
+			nurDeutschlandTicketVerbindungen  => \0,
+			deutschlandTicketVorhanden        => \0
+		};
+	}
 
 	for my $via ( @{ $conf{via} } ) {
 		my $via_stop = { id => $via->{stop}->id };
@@ -184,7 +215,12 @@ sub new {
 		}
 
 		$self->{raw_json} = $json->decode($content);
-		$self->parse_connections;
+		if ($conf{from} and $conf{to}) {
+			$self->parse_connections;
+		}
+		elsif ($conf{offers}) {
+			$self->parse_offers;
+		}
 	}
 
 	return $self;
@@ -258,7 +294,6 @@ sub post_with_cache {
 	);
 
 	if ( $reply->is_error ) {
-		say $reply->status_line;
 		return ( undef, $reply->status_line );
 	}
 	my $content = $reply->content;
@@ -294,6 +329,16 @@ sub parse_connections {
 	}
 }
 
+sub parse_offers {
+	my ($self) = @_;
+
+	for my $offer (@{$self->{raw_json}{verbindungen}[0]{reiseAngebote} // []}) {
+		push(@{$self->{offers}}, Travel::Routing::DE::DBRIS::Offer->new(
+			json => $offer
+		));
+	}
+}
+
 # }}}
 # {{{ Public Functions
 
@@ -305,7 +350,12 @@ sub errstr {
 
 sub connections {
 	my ($self) = @_;
-	return @{ $self->{connections} };
+	return @{ $self->{connections} // []};
+}
+
+sub offers {
+	my ($self) = @_;
+	return @{$self->{offers} // [] };
 }
 
 # }}}

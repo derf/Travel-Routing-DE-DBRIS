@@ -18,7 +18,7 @@ Travel::Routing::DE::DBRIS::Connection->mk_ro_accessors(
 	  sched_dep rt_dep dep
 	  sched_arr rt_arr arr
 	  occupancy occupancy_first occupancy_second
-	  price price_unit
+	  price price_unit recon
 	)
 );
 
@@ -35,6 +35,7 @@ sub new {
 		  // -1,
 		is_unscheduled => $json->{isAlternativeVerbindung},
 		id             => $json->{tripId},
+		recon          => $json->{ctxRecon},
 		price          => $json->{angebotsPreis}{betrag},
 		price_unit     => $json->{angebotsPreis}{waehrung},
 		strptime_obj   => $strptime,

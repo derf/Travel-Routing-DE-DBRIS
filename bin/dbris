@@ -14,15 +14,13 @@ use List::Util   qw(max);
 use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS;
 
-my ( $date, $time, $from, $to, $language );
+my ( $date, $time, $arrival, $from, $to, $language );
 my $mots;
-my ( $first_class, $passengers );
-my $developer_mode;
-my $show_jid;
-my ( $json_output, $raw_json_output );
-my $verbose;
+my ( $first_class,    $passengers );
+my ( $developer_mode, $verbose );
+my ( $show_jid,       $show_full_route );
+my ( $json_output,    $raw_json_output );
 my $use_cache = 1;
-my $show_full_route;
 my $cache;
 
 my %known_mot = map { $_ => 1 }
@@ -49,6 +47,7 @@ my $output_bold_warning  = -t STDOUT ? "\033[1;40;33m" : q{};
 my $output_bold_critical = -t STDOUT ? "\033[1;40;31m" : q{};
 
 GetOptions(
+	'a|arrive=s'           => sub { $arrival = 1; $time = $_[1] },
 	'd|date=s'             => \$date,
 	'h|help'               => sub { show_help(0) },
 	'f|full-route'         => \$show_full_route,
@@ -171,6 +170,7 @@ if ( $date or $time ) {
 			exit 1;
 		}
 	}
+	$opt{arrival}  = $arrival;
 	$opt{datetime} = $dt;
 }
 
@@ -479,7 +479,7 @@ dbris - Interface to bahn.de public transit routing service
 
 =head1 SYNOPSIS
 
-B<dbris> [B<-d> I<DD.MM.YYYY>] [B<-t> I<HH:MM>] [...] I<from-stop>
+B<dbris> [B<-d> I<DD.MM.YYYY>] [B<-a>|B<-t> I<HH:MM>] [...] I<from-stop>
 [I<via-stop>[:I<duration>] [I<via-stop>[:I<duration>]]] I<to-stop>
 
 =head1 VERSION
@@ -496,6 +496,11 @@ connections, with an optional minimum stopover I<duration> given in minutes.
 =head1 OPTIONS
 
 =over
+
+=item B<-a>, B<--arrive> I<HH:MM>
+
+Request connections that arrive on or after I<HH:MM>.
+Overrides B<--time>.
 
 =item B<-d>, B<--date> I<dd.mm.>[I<yyyy>]
 
@@ -564,7 +569,7 @@ Useful for debugging and development purposes.
 
 =item B<-t>, B<--time> I<HH:MM>
 
-Request connections on or after I<HH:MM>.
+Request connections that depart on or after I<HH:MM>.
 Default: now.
 
 =item B<-v>, B<--verbose>

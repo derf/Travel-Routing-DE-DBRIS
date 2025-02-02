@@ -10,7 +10,7 @@ use parent 'Class::Accessor';
 use DateTime::Duration;
 use Travel::Routing::DE::DBRIS::Connection::Segment;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 Travel::Routing::DE::DBRIS::Connection->mk_ro_accessors(
 	qw(changes feasibility is_cancelled is_unscheduled is_unlikely

@@ -9,7 +9,7 @@ use parent 'Class::Accessor';
 use DateTime::Duration;
 use Travel::Status::DE::DBRIS::Location;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 Travel::Routing::DE::DBRIS::Connection::Segment->mk_ro_accessors(
 	qw(
@@ -43,6 +43,7 @@ sub new {
 		direction   => $json->{verkehrsmittel}{richtung},
 		distance_m  => $json->{distanz},
 		feasibility => $json->{anschlussBewertungCode},
+		journey_id  => $json->{journeyId},
 	};
 
 	if ( my $ts = $json->{abfahrtsZeitpunkt} ) {

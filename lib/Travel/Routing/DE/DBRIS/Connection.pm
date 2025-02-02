@@ -156,6 +156,20 @@ sub TO_JSON {
 
 	my $ret = { %{$self} };
 
+	delete $ret->{strptime_obj};
+
+	for my $k (qw(sched_dep rt_dep dep sched_arr rt_arr arr)) {
+		if ( $ret->{$k} ) {
+			$ret->{$k} = $ret->{$k}->epoch;
+		}
+	}
+
+	for my $k (qw(sched_duration rt_duration duration)) {
+		if ( $ret->{$k} ) {
+			$ret->{$k} = $ret->{$k}->in_units('minutes');
+		}
+	}
+
 	return $ret;
 }
 

@@ -16,7 +16,8 @@ use Travel::Routing::DE::DBRIS;
 
 my ( $date, $time, $arrival, $from, $to, $language );
 my $mots;
-my ( $show_jid,       $show_full_route, $show_offers );
+my ( $show_jid,       $show_full_route );
+my ( $show_offers,    $show_upsell_offers, $show_cross_offers );
 my ( $first_class,    $passengers );
 my ( $developer_mode, $verbose );
 my ( $json_output,    $raw_json_output );
@@ -56,6 +57,8 @@ GetOptions(
 	'm|modes-of-transit=s' => \$mots,
 	'l|language=s'         => \$language,
 	'o|with-offers'        => \$show_offers,
+	'with-upsell-offers'   => \$show_upsell_offers,
+	'with-cross-offers'    => \$show_cross_offers,
 	'p|passengers=s'       => \$passengers,
 	't|time=s'             => \$time,
 	'v|verbose'            => \$verbose,
@@ -373,22 +376,39 @@ for my $connection ( $ris->connections ) {
 	if ($show_offers) {
 		my $offers_req = Travel::Routing::DE::DBRIS->new(
 			developer_mode => $developer_mode,
-			offers => {
+			offers         => {
 				recon => $connection->recon,
 			},
-			passengers => $opt{passengers},
+			passengers  => $opt{passengers},
 			first_class => $opt{first_class},
 		);
 		if ( my $err = $offers_req->errstr ) {
 			say STDERR "Request error while looking up offers: ${err}";
 		}
-		for my $offer ($offers_req->offers) {
-			printf('- %5.2f %s %s', $offer->price, $offer->price_unit =~ s{EUR}{€}r, $offer->name);
-			if ($first_class and $offer->class == 2 or not $first_class and $offer->class == 1) {
-				printf(" %d. Klasse", $offer->class);
+		for my $offer ( $offers_req->offers ) {
+			if ( $offer->needs_context ) {
+
+				# offers that are only valid when also bying, e.g., a BC25 or BC50
+				# Note that this automatically skips cross-sell offers.
+				next;
 			}
-			if (scalar $offer->conditions) {
-				printf(' (%s)', join(q{ · }, map { $_->{textKurz} } $offer->conditions));
+			if ( $offer->is_upsell and not $show_upsell_offers ) {
+				next;
+			}
+			if ( $offer->is_cross_sell and not $show_cross_offers ) {
+				next;
+			}
+			printf( '- %5.2f %s %s',
+				$offer->price, $offer->price_unit =~ s{EUR}{€}r,
+				$offer->name );
+			if ( $first_class and $offer->class == 2
+				or not $first_class and $offer->class == 1 )
+			{
+				printf( " %d. Klasse", $offer->class );
+			}
+			if ( scalar $offer->conditions ) {
+				printf( ' (%s)',
+					join( q{ · }, map { $_->{textKurz} } $offer->conditions ) );
 			}
 			say q{};
 		}

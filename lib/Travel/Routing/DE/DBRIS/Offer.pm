@@ -10,7 +10,7 @@ use parent 'Class::Accessor';
 our $VERSION = '0.03';
 
 Travel::Routing::DE::DBRIS::Offer->mk_ro_accessors(
-	qw(class name price price_unit));
+	qw(class name price price_unit is_upsell is_cross_sell needs_context));
 
 sub new {
 	my ( $obj, %opt ) = @_;
@@ -18,12 +18,22 @@ sub new {
 	my $json = $opt{json};
 
 	my $ref = {
-		class      => $json->{klasse} =~ s{KLASSE_}{}r,
-		name       => $json->{name},
-		price      => $json->{preis}{betrag},
-		price_unit => $json->{preis}{waehrung},
-		conditions => $json->{konditionsAnzeigen},
+		class         => $json->{klasse} =~ s{KLASSE_}{}r,
+		name          => $json->{name},
+		price         => $json->{preis}{betrag},
+		price_unit    => $json->{preis}{waehrung},
+		conditions    => $json->{konditionsAnzeigen},
+		is_upsell     => exists $json->{upsellInfos}    ? 1 : 0,
+		is_cross_sell => exists $json->{crosssellInfos} ? 1 : 0,
 	};
+
+	for my $relation ( @{ $json->{angebotsbeziehungList} // [] } ) {
+		for my $offer_ref ( @{ $relation->{referenzen} // [] } ) {
+			if ( $offer_ref->{referenzAngebotsoption} eq 'PFLICHT' ) {
+				$ref->{needs_context} = 1;
+			}
+		}
+	}
 
 	bless( $ref, $obj );
 

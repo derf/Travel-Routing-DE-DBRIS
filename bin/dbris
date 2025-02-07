@@ -592,6 +592,16 @@ for 90 seconds in F<~/.cache/Travel-Routing-DE-DBRIS> (or a path relative to
 C<$XDG_CACHE_HOME>, if set). Use this option to disable caching. You can use
 B<--cache> to re-enable it.
 
+=item B<-o>, B<--with-offers>
+
+(EXPERIMENTAL)
+Request offers (e.g. local transit tickets, super saver tickets, flex tickets)
+and list their prices, terms, and conditions for each connection.
+Note that this option is still work-in-progress and may miss important details.
+Offers consisting of multiple components (e.g. "buy a BahnCard 25 and then buy
+a cheaper ticket for this connection") are not supported yet.
+See also B<--with-upsell-offers>.
+
 =item B<-p>, B<--passengers> I<type>[:I<discounts>,...][B<;>I<type>[:I<discounts>,...]B<;>...]
 
 Use the specified passenger information to request ticket offers and show the
@@ -625,6 +635,11 @@ quality of service issues or announcements.
 =item B<-V>, B<--version>
 
 Show version information and exit.
+
+=item B<--with-upsell-offers>
+
+Include upsell offers such as "travel first class instead of second class".
+Must be used with B<-o> / B<--with-offers>.
 
 =back
 

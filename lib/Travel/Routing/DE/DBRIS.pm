@@ -214,6 +214,12 @@ sub new {
 			say decode( 'utf-8', $content );
 		}
 
+		# Sometimes, bahn.de adds garbage at the end
+		if ( $content =~ m/^[^{]/ or $content =~ m/[^}]$/ ) {
+			$content =~ s/^[^{]+//;
+			$content =~ s/[^}]+$//;
+		}
+
 		$self->{raw_json} = $json->decode($content);
 		if ( $conf{from} and $conf{to} ) {
 			$self->parse_connections;

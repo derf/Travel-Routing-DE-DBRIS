@@ -14,6 +14,7 @@ use DateTime::Format::Strptime;
 use Encode qw(decode encode);
 use JSON;
 use LWP::UserAgent;
+use IO::Uncompress::Gunzip;
 use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS::Connection;
 use Travel::Routing::DE::DBRIS::Offer;
@@ -203,21 +204,21 @@ sub new {
 			say "requesting $req_str";
 		}
 
-		my ( $content, $error ) = $self->post_with_cache( $req_url, $req_str );
+		my ( $raw_content, $error )
+		  = $self->post_with_cache( $req_url, $req_str );
 
 		if ($error) {
 			$self->{errstr} = $error;
 			return $self;
 		}
 
+		my $gunzip  = IO::Uncompress::Gunzip->new( \$raw_content, Append => 1 );
+		my $content = q{};
+
+		while ( $gunzip->read($content) ) { }
+
 		if ( $self->{developer_mode} ) {
 			say decode( 'utf-8', $content );
-		}
-
-		# Sometimes, bahn.de adds garbage at the end
-		if ( $content =~ m/^[^{]/ or $content =~ m/[^}]$/ ) {
-			$content =~ s/^[^{]+//;
-			$content =~ s/[^}]+$//;
 		}
 
 		$self->{raw_json} = $json->decode($content);
@@ -294,6 +295,7 @@ sub post_with_cache {
 	my $reply = $self->{ua}->post(
 		$url,
 		Accept            => 'application/json',
+		'Accept-Encoding' => 'gzip',
 		'Accept-Language' => $self->{language},
 		'Content-Type'    => 'application/json; charset=utf-8',
 		Content           => $req,

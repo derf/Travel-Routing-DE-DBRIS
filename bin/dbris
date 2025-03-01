@@ -346,10 +346,12 @@ for my $connection ( $ris->connections ) {
 	  map { length( $_->dep_delay || q{} ), length( $_->arr_delay || q{} ) }
 	  $connection->segments;
 	if ($show_full_route) {
-		my $max_route_delay_digits = max map {
-			map { length( $_->arr_delay || q{} ) }
-			  $_->route
-		} $connection->segments;
+		my $max_route_delay_digits = (
+			max map {
+				map { length( $_->arr_delay || q{} ) }
+				  $_->route
+			} $connection->segments
+		) // 0;
 		if ( $max_route_delay_digits > $max_delay_digits ) {
 			$max_delay_digits = $max_route_delay_digits;
 		}

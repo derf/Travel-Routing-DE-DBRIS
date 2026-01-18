@@ -189,8 +189,9 @@ Documentation is not available in this image. Please refer to the
 
 ## Resources
 
-Mirrors of the dbris / Travel::Routing::DE::HAFAS repository are available at
+Mirrors of the dbris / Travel::Routing::DE::DBRIS repository are available at
 
-* [Chaosdorf](https://chaosdorf.de/git/derf/travel-routing-de-hafas)
-* [git.finalrewind.org](https://git.finalrewind.org/Travel-Routing-DE-HAFAS/)
-* [GitHub](https://github.com/derf/travel-routing-de-hafas)
+* [Chaosdorf](https://chaosdorf.de/git/derf/travel-routing-de-dbris)
+* [Codeberg](https://codeberg.org/derf/Travel-Routing-DE-DBRIS/)
+* [Finalrewind](https://git.finalrewind.org/derf/Travel-Routing-DE-DBRIS/)
+* [GitHub](https://github.com/derf/travel-routing-de-dbris)

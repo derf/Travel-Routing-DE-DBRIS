@@ -14,6 +14,7 @@ use DateTime::Format::Strptime;
 use Encode qw(decode encode);
 use JSON;
 use LWP::UserAgent;
+use UUID qw(uuid4);
 use IO::Uncompress::Gunzip;
 use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS::Connection;
@@ -42,6 +43,20 @@ sub new {
 		$ua->env_proxy;
 	}
 
+	my @ua_base = (
+'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.XXXX.YYY Mobile Safari/537.36',
+'Mozila/5.0 (Linux; Android 14; SM-S928B/DS) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.XXXX.YYY Mobile Safari/537.36',
+'Mozilla/5.0 (Linux; Android 14; Pixel 9 Pro Build/AD1A.240418.003; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/124.0.XXXX.YYY Mobile Safari/537.36',
+'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.XXXX.YYY Mobile Safari/537.36',
+'Mozilla/5.0 (Linux; Android 15; moto g - 2025 Build/V1VK35.22-13-2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.XXXX.YYY Mobile Safari/537.36',
+'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.XXXX.YYY Safari/537.36',
+	);
+
+	my $rand1  = int( rand(1000) );
+	my $rand2  = int( rand(100) );
+	my $ua_str = $ua_base[ int( rand(@ua_base) ) ] =~ s{XXXX}{$rand1}r
+	  =~ s{YYY}{$rand2}r;
+
 	# Supported Languages: de cs da en es fr it nl pl
 
 	my $self = {
@@ -51,6 +66,14 @@ sub new {
 		to             => $conf{to},
 		language       => $conf{language} // 'de',
 		ua             => $ua,
+		header         => {
+			'accept'           => 'application/json',
+			'content-type'     => 'application/json; charset=utf-8',
+			'Origin'           => 'https://www.bahn.de',
+			'Referer'          => 'https://www.bahn.de/buchung/fahrplan/suche',
+			'User-Agent'       => $ua_str,
+			'x-correlation-id' => uuid4() . '_' . uuid4(),
+		},
 	};
 
 	bless( $self, $obj );
@@ -202,6 +225,10 @@ sub new {
 		my $req_str = $json->encode($req);
 		if ( $self->{developer_mode} ) {
 			say "requesting $req_str";
+		}
+
+		while ( my ( $key, $value ) = each %{ $self->{header} } ) {
+			$ua->default_header( $key => $value );
 		}
 
 		my ( $raw_content, $error )

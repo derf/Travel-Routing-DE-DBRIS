@@ -33,6 +33,7 @@ Module::Build->new(
 		'LWP::Protocol::https'                => 0,
 		'Travel::Status::DE::DBRIS'           => '0.08',
 		'Travel::Status::DE::DBRIS::Location' => '0.08',
+		'UUID'                                => 0,
 	},
 	script_files => 'bin/',
 	sign         => 1,

@@ -1,3 +1,13 @@
+Travel::Routing::DE::DBRIS 0.08 - Fri Feb 06 2026
+
+    * Deutsche Bahn have rolled out a rather aggressive Akamai EdgeSuite
+      WAF configuration, and too-frequent requests made with this module
+      may cause the corresponding IP address or range to be blocked for
+      yet-to-be-determined amounts of time. Send more plausible requests
+      with randomized user agent strings and additional headers to maybe
+      hopefully slightly reduce the risk of this happening.
+    * New dependency: UUID
+
 Travel::Routing::DE::DBRIS 0.07 - Sat Jun 21 2025
 
     * dbris: Add--colour={auto,always,never}

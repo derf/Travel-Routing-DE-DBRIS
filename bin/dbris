@@ -237,7 +237,7 @@ sub show_help {
 	my ($code) = @_;
 
 	print "Usage: dbris [-d dd.mm.yyyy] [-t hh:mm] <from> <to>\n"
-	  . "See also: man dbris-m\n";
+	  . "See also: man dbris\n";
 
 	exit $code;
 }

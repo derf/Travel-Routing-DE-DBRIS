@@ -38,7 +38,7 @@ sub new {
 	my $ua = $conf{user_agent};
 
 	if ( not $ua ) {
-		my %lwp_options = %{ $conf{lwp_options} // { timeout => 10 } };
+		my %lwp_options = %{ $conf{lwp_options} // { timeout => 20 } };
 		$ua = LWP::UserAgent->new(%lwp_options);
 		$ua->env_proxy;
 	}
@@ -514,7 +514,7 @@ of ten seconds.
 =item B<lwp_options> => I<hashref>
 
 Pass I<hashref> to C<< LWP::UserAgent->new >>.
-Default: C<< { timeout => 10 } >>.
+Default: C<< { timeout => 20 } >>.
 
 =back
 

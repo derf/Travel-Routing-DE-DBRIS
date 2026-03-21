@@ -192,8 +192,9 @@ if ( $date or $time ) {
 	$opt{datetime} = $dt;
 }
 
-if ( $mots and $mots eq 'help' ) {
-	say "Supported modes of transmit (-m / --modes-of-transit):";
+if ( $mots and $mots =~ m{ ^ ( help | [?] ) $ }ix ) {
+	say
+'Supported modes of transmit for -m / --modes-of-transit (case-insensitive):';
 	for my $mot ( sort keys %known_mot ) {
 		say $mot;
 	}
@@ -203,7 +204,7 @@ if ( $mots and $mots eq 'help' ) {
 if ($mots) {
 
 	# Passing unknown MOTs to the backend results in HTTP 422 Unprocessable Entity
-	my @mots = split( qr{, *}, $mots );
+	my @mots = map { uc } split( qr{, *}, $mots );
 	my $found_unknown;
 	for my $mot (@mots) {
 		if ( not $known_mot{$mot} ) {
@@ -611,6 +612,8 @@ Default: de.
 Only show connections with the specified modes of transit.
 Supported modes of transit are:
 ICE, EC_IC, IR, REGIONAL, SBAHN, BUS, SCHIFF, UBAHN, TRAM, ANRUFPFLICHTIG.
+I<mot> is case-insensitive; supported modes can also be queried with
+C<< -m help >> or C<< -m ? >>.
 Default: all modes.
 
 =item B<--no-cache>

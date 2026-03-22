@@ -473,18 +473,19 @@ for my $connection ( $ris->connections ) {
 		elsif ( $segment->direction ) {
 			printf( "${output_bold}%s${output_reset} → %s  %s\n",
 				$segment->train_mid, $segment->direction,
-				format_occupancy($segment) );
+				$show_full_route ? q{} : format_occupancy($segment) );
 		}
 		else {
 			printf( "${output_bold}%s${output_reset}\n", $segment->train_long );
 		}
 
 		printf(
-			"%s%s  ab  %s%s\n",
+			"%s%s  %s  %s%s\n",
 			$segment->dep->strftime('%H:%M'),
 			$max_delay_digits
 			? q{ } . format_delay( $segment->dep_delay, $max_delay_digits )
 			: q{},
+			$show_full_route ? format_occupancy( $segment->dep_stop ) : q{●},
 			$segment->dep_name,
 			$segment->dep_platform ? q{  } . $segment->dep_platform : q{},
 		);
@@ -505,13 +506,14 @@ for my $connection ( $ris->connections ) {
 		}
 
 		printf(
-			"%s%s%s%s  an  %s%s\n",
+			"%s%s%s%s  %s  %s%s\n",
 			$segment->is_unlikely ? $output_critical : q{},
 			$segment->arr->strftime('%H:%M'),
 			$segment->is_unlikely ? $output_reset : q{},
 			$max_delay_digits
 			? q{ } . format_delay( $segment->arr_delay, $max_delay_digits )
 			: q{},
+			$show_full_route ? format_occupancy( $segment->arr_stop ) : q{○},
 			$segment->arr_name,
 			$segment->arr_platform ? q{  } . $segment->arr_platform : q{},
 		);

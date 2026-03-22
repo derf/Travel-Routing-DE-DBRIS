@@ -15,8 +15,8 @@ Travel::Routing::DE::DBRIS::Connection::Segment->mk_ro_accessors(
 	qw(
 	  dep_name dep_eva arr_name arr_eva
 	  train train_long train_mid train_short direction
-	  sched_dep rt_dep dep dep_platform
-	  sched_arr rt_arr arr arr_platform
+	  sched_dep rt_dep dep dep_platform dep_stop
+	  sched_arr rt_arr arr arr_platform arr_stop
 	  sched_duration rt_duration duration duration_percent
 	  arr_delay dep_delay delay feasibility is_unlikely transfer_duration
 	  journey_id
@@ -156,6 +156,8 @@ sub new {
 	}
 
 	if ( @{ $ref->{route} // [] } ) {
+		$ref->{dep_stop}     = $ref->{route}[0];
+		$ref->{arr_stop}     = $ref->{route}[-1];
 		$ref->{dep_platform} = $ref->{route}[0]->platform;
 		$ref->{arr_platform} = $ref->{route}[-1]->platform;
 	}

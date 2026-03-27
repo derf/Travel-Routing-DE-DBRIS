@@ -397,20 +397,32 @@ for my $connection ( $ris->connections ) {
 		}
 	}
 
-	say q{};
+	my $dep_ddmm
+	  = $connection->dep
+	  ? $connection->dep->strftime('%d.%m. ')
+	  : q{??.??. };
+	my $dep_hhmm
+	  = $connection->dep ? $connection->dep->strftime('%H:%M')
+	  : q{??:??}, my $arr_ddmm
+	  = $connection->arr ? $connection->arr->strftime('%d.%m. ')
+	  : q{??.??. };
+	my $arr_hhmm
+	  = $connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
+
+	  say q{};
 	printf(
-		"%s %s%s%s  (%02d:%02d)  %s%s%s  %s%s\n",
-		$connection->dep ? $connection->dep->strftime('%d.%m.')
-		: q{??.??.},
+		"%s%s%s%s  (%02d:%02d)  %s%s%s%s  %s%s\n",
+		$dep_ddmm,
 		$format,
-		$connection->dep ? $connection->dep->strftime('%H:%M')
-		: q{??:??},
+		$dep_hhmm,
 		$output_reset,
 		$connection->duration->in_units( 'hours', 'minutes' ),
+		$arr_ddmm ne $dep_ddmm ? $arr_ddmm : q{},
 		$format,
-		$connection->arr ? $connection->arr->strftime('%H:%M') : q{??:??},
+		$arr_hhmm,
 		$output_reset,
-		$connection->is_cancelled ? "${output_critical}XX${output_reset}"
+		$connection->is_cancelled
+		? "${output_critical}XX${output_reset}"
 		: format_occupancy($connection),
 		$header,
 	);

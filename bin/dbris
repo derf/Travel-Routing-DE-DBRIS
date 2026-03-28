@@ -520,7 +520,7 @@ for my $connection ( $ris->connections ) {
 
 		printf(
 			"%s%s  %s  %s%s\n",
-			$segment->dep->strftime('%H:%M'),
+			$segment->dep ? $segment->dep->strftime('%H:%M') : q{??:??},
 			$max_delay_digits
 			? q{ } . format_delay( $segment->dep_delay, $max_delay_digits )
 			: q{},
@@ -546,9 +546,9 @@ for my $connection ( $ris->connections ) {
 
 		printf(
 			"%s%s%s%s  %s  %s%s\n",
-			$segment->is_unlikely ? $output_critical : q{},
-			$segment->arr->strftime('%H:%M'),
-			$segment->is_unlikely ? $output_reset : q{},
+			$segment->is_unlikely ? $output_critical                 : q{},
+			$segment->arr         ? $segment->arr->strftime('%H:%M') : q{??:??},
+			$segment->is_unlikely ? $output_reset                    : q{},
 			$max_delay_digits
 			? q{ } . format_delay( $segment->arr_delay, $max_delay_digits )
 			: q{},

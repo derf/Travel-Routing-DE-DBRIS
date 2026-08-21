@@ -296,6 +296,10 @@ sub display_occupancy {
 sub format_occupancy {
 	my ($stop) = @_;
 
+	if (not $stop) {
+		return q{  };
+	}
+
 	return display_occupancy( $stop->occupancy_first )
 	  . display_occupancy( $stop->occupancy_second );
 }

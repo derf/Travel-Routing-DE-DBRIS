@@ -8,7 +8,7 @@ requires 'JSON';
 requires 'List::Util';
 requires 'LWP::UserAgent';
 requires 'LWP::Protocol::https';
-requires 'Travel::Status::DE::DBRIS', '0.30';
+requires 'Travel::Status::DE::DBRIS', '0.35';
 requires 'UUID';
 
 suggests 'Cache::File';

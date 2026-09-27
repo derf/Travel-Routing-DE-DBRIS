@@ -4,7 +4,6 @@ requires 'DateTime::Duration';
 requires 'DateTime::Format::Strptime';
 requires 'Getopt::Long';
 requires 'HTTP::Request', '6.37';
-requires 'IO::Uncompress::Brotli', '0.004_002';
 requires 'JSON';
 requires 'List::Util';
 requires 'LWP::UserAgent';

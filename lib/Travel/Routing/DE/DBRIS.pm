@@ -19,7 +19,7 @@ use Travel::Status::DE::DBRIS;
 use Travel::Routing::DE::DBRIS::Connection;
 use Travel::Routing::DE::DBRIS::Offer;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 Travel::Routing::DE::DBRIS->mk_ro_accessors(qw(earlier later));
 
@@ -437,7 +437,7 @@ Travel::Routing::DE::DBRIS - Interface to the bahn.de itinerary service
 
 =head1 VERSION
 
-version 0.14
+version 0.15
 
 =head1 DESCRIPTION
 
